@@ -34,7 +34,7 @@
 
 typedef enum {
     // SEI Picture Timing Picture Structure.
-    // From the ITU=T H.265 Standards Document v3 (04/2015):
+    // From the ITU-T H.265 Standards Document v3 (04/2015):
     // Table D.2: Interpretation of pic_struct:
     // When present, pic_struct is constrained to use one of the following:
     //   - all pictures in CSV are one of: 0, 7 or 8.
@@ -65,14 +65,14 @@ typedef enum {
     HEVC_SEI_PIC_STRUCT_FRAME_TRIPLING    = 8,
 
     // top field paired with previous bottom field. Bottom Field First.
-    HEVC_SEI_PIC_STRUCT_FIELD_TFPBF   = 9,
+    HEVC_SEI_PIC_STRUCT_FIELD_TFPBF       = 9,
     // bottom field paired with previous top field. Top Field First.
-    HEVC_SEI_PIC_STRUCT_FIELD_BFPTF   = 10,
+    HEVC_SEI_PIC_STRUCT_FIELD_BFPTF       = 10,
 
     // top field paired with next bottom field. Top Field First.
-    HEVC_SEI_PIC_STRUCT_FIELD_TFNBF   = 11,
+    HEVC_SEI_PIC_STRUCT_FIELD_TFNBF       = 11,
     // bottom field paired with next top field. Bottom Field First.
-    HEVC_SEI_PIC_STRUCT_FIELD_BFNTF   = 12,
+    HEVC_SEI_PIC_STRUCT_FIELD_BFNTF       = 12,
 } HEVC_SEI_PicStructType;
 
 // Returns 1 - when type is interlaced, 0 - otherwise.

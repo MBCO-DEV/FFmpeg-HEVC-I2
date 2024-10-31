@@ -35,11 +35,13 @@
 #include "progressframe.h"
 #include "refstruct.h"
 
+#include <stdatomic.h>
+
 typedef struct HEVCOutputFrameConstructionContext {
     // Thread Data Access/Synchronization.
     AVMutex mutex;
 
-    // Decoder Output Tracking.
+    // DPB Output Tracking.
     uint64_t dpb_counter;
     int dpb_poc;
     uint64_t dpb_poc_ooorder_counter;
@@ -55,7 +57,7 @@ typedef struct HEVCOutputFrameConstructionContext {
     // Reconstructed Interlaced Frames From Field Pictures for Output.
     AVFrame *constructed_frame;
 
-    // Output Frame Counter.
+    // Output Frame Tracking.
     uint64_t output_counter;
     int output_poc;
     uint64_t output_poc_ooorder_counter;
@@ -105,7 +107,7 @@ void ff_hevc_output_frame_construction_ctx_unref(HEVCContext *s)
 
         HEVCOutputFrameConstructionContext * ctx = s->output_frame_construction_ctx;
 
-        ff_mutex_lock(&ctx->mutex);
+        av_assert0(ff_mutex_lock(&ctx->mutex) == 0);
 
        if (ctx->dpb_counter) {
            av_log(s->avctx, AV_LOG_ERROR,
@@ -122,7 +124,7 @@ void ff_hevc_output_frame_construction_ctx_unref(HEVCContext *s)
                   "");
        }
 
-       ff_mutex_unlock(&ctx->mutex);
+       av_assert0(ff_mutex_unlock(&ctx->mutex) == 0);
     }
 
     ff_refstruct_unref(&s->output_frame_construction_ctx);
@@ -256,6 +258,10 @@ static HEVCFrame *alloc_frame(HEVCContext *s, HEVCLayerContext *l)
             if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_TFBFTF ||
                 frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_BFTFBF)
                 frame->f->repeat_pict = 1;
+            else if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_DOUBLING)
+                frame->f->repeat_pict = 2;
+            else if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_TRIPLING)
+                frame->f->repeat_pict = 3;
         }
 
         ret = ff_hwaccel_frame_priv_alloc(s->avctx, &frame->hwaccel_picture_private);
@@ -646,8 +652,7 @@ int ff_hevc_output_frames(HEVCContext *s,
                            "");
 
                     s->output_frame_construction_ctx->output_counter++;
-                    if (output_poc != dpb_poc &&
-                            s->output_frame_construction_ctx->output_counter > 1 &&
+                    if (s->output_frame_construction_ctx->output_counter > 1 &&
                             output_poc < s->output_frame_construction_ctx->output_poc &&
                             output_poc > 0) {
                         s->output_frame_construction_ctx->output_poc_ooorder_counter++;
