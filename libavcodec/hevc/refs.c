@@ -35,8 +35,6 @@
 #include "progressframe.h"
 #include "refstruct.h"
 
-#include <stdatomic.h>
-
 typedef struct HEVCOutputFrameConstructionContext {
     // Thread Data Access/Synchronization.
     AVMutex mutex;
