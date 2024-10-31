@@ -536,6 +536,7 @@ int ff_hevc_output_frames(HEVCContext *s,
                         s->output_frame_construction_ctx->have_first_field = 1;
                         s->output_frame_construction_ctx->first_field_sei_pic_struct = dpb_sei_pic_struct;
                         s->output_frame_construction_ctx->first_field_poc = dpb_poc;
+                        av_frame_unref(s->output_frame_construction_ctx->first_field);
                         ret = av_frame_ref(s->output_frame_construction_ctx->first_field, f);
                         if (ret < 0) {
                             av_log(s->avctx, AV_LOG_ERROR,
@@ -565,6 +566,7 @@ int ff_hevc_output_frames(HEVCContext *s,
                                 bottom_field = f;
                                 bfPoc = dpb_poc;
                             }
+                            av_frame_unref(constructed_frame);
                             ret = interlaced_frame_from_fields(constructed_frame, top_field, bottom_field);
                             if (ret >= 0) {
                                 output_frame = constructed_frame;
