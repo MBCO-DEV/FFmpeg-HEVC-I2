@@ -253,14 +253,14 @@ static HEVCFrame *alloc_frame(HEVCContext *s, HEVCLayerContext *l)
             frame->f->flags |= AV_FRAME_FLAG_INTERLACED;
             if (ff_hevc_sei_pic_struct_is_tff(frame->sei_pic_struct))
                 frame->f->flags |= AV_FRAME_FLAG_TOP_FIELD_FIRST;
-            if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_TFBFTF ||
-                frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_BFTFBF)
-                frame->f->repeat_pict = 1;
-            else if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_DOUBLING)
-                frame->f->repeat_pict = 2;
-            else if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_TRIPLING)
-                frame->f->repeat_pict = 3;
         }
+        if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_TFBFTF ||
+            frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_BFTFBF)
+            frame->f->repeat_pict = 1;
+        else if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_DOUBLING)
+            frame->f->repeat_pict = 2;
+        else if (frame->sei_pic_struct == HEVC_SEI_PIC_STRUCT_FRAME_TRIPLING)
+            frame->f->repeat_pict = 3;
 
         ret = ff_hwaccel_frame_priv_alloc(s->avctx, &frame->hwaccel_picture_private);
         if (ret < 0)
