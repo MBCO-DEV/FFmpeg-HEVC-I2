@@ -445,25 +445,29 @@ int ff_hevc_output_frames(HEVCContext *s,
             AVFrame *f = frame->needs_fg ? frame->frame_grain : frame->f;
             int output = !discard && (layers_active_output & (1 << min_layer));
 
-            if (frame->poc != s->poc) {
-                if (s->avctx->active_thread_type == FF_THREAD_FRAME)
-                {
-                    // Wait for other thread to finish decoding this frame/field picture.
-                    // Otherwise I have seen image corruption for some streams..
+            if (ff_hevc_sei_pict_struct_is_field_picture(frame->sei_pic_struct)) {
+                // Skip the extra work if the stream contains frame pictures.
+                // NOTE: This also fixes the final frame output for the fate test streams.
+                if (frame->poc != s->poc) {
+                    if (s->avctx->active_thread_type == FF_THREAD_FRAME)
+                    {
+                        // Wait for other thread to finish decoding this frame/field picture.
+                        // Otherwise I have seen image corruption for some streams..
+                        av_log(s->avctx, AV_LOG_DEBUG,
+                               "Waiting on Frame POC: %d.\n",
+                               frame->poc);
+                        ff_progress_frame_await(&frame->tf, INT_MAX);
+                    }
+                } else {
+                    // This is the Context currently decoding..
+                    // Skip it to ensure that this frame is completely decoded and finalized.
+                    // This will allow the next context to process it
+                    // Otherwise I have seen image corruption for some streams.
                     av_log(s->avctx, AV_LOG_DEBUG,
-                           "Waiting on Frame POC: %d.\n",
+                           "Schedule Frame for Next Pass POC: %d.\n",
                            frame->poc);
-                    ff_progress_frame_await(&frame->tf, INT_MAX);
+                    return 0;
                 }
-            } else {
-                // This is the Context currently decoding..
-                // Skip it to ensure that this frame is completely decoded and finalized.
-                // This will allow the next context to process it
-                // Otherwise I have seen image corruption for some streams.
-                av_log(s->avctx, AV_LOG_DEBUG,
-                       "Schedule Frame for Next Pass POC: %d.\n",
-                       frame->poc);
-                return 0;
             }
 
             av_assert0(s->output_frame_construction_ctx);
