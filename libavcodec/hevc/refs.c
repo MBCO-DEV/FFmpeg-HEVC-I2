@@ -314,6 +314,11 @@ int ff_hevc_set_new_ref(HEVCContext *s, HEVCLayerContext *l, int poc)
     ref->f->crop_right  = l->sps->output_window.right_offset;
     ref->f->crop_top    = l->sps->output_window.top_offset;
     ref->f->crop_bottom = l->sps->output_window.bottom_offset;
+    // We are combining field pictures so need to double the top/bottom crop here.
+    if (ff_hevc_sei_pict_struct_is_field_picture(ref->sei_pic_struct)) {
+        ref->f->crop_top    *= 2;
+        ref->f->crop_bottom *= 2;
+    }
 
     return 0;
 }
