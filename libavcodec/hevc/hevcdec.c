@@ -359,7 +359,18 @@ static void export_stream_params(HEVCContext *s, const HEVCSPS *sps)
     avctx->profile             = sps->ptl.general_ptl.profile_idc;
     avctx->level               = sps->ptl.general_ptl.level_idc;
 
-    ff_set_sar(avctx, sps->vui.common.sar);
+    // There are some streams in the wild that were encode field pitcures
+    //    and set double height aspect ratio so that some players that do not
+    //    support interlaced HEVC display the field pictures with double height.
+    // Since we are now combining the field pictures into a single interlaced
+    //    frame, fix the sample aspect ratio to restore the correct shape for the
+    //    reconstructed interlaced frames.
+    if (ff_hevc_sei_pict_struct_is_field_picture(s->sei.picture_timing.picture_struct) &&
+            sps->vui.common.sar.num == 1 && sps->vui.common.sar.den == 2) {
+        ff_set_sar(avctx, (AVRational){1, 1});
+    } else {
+        ff_set_sar(avctx, sps->vui.common.sar);
+    }
 
     if (sps->vui.common.video_signal_type_present_flag)
         avctx->color_range = sps->vui.common.video_full_range_flag ? AVCOL_RANGE_JPEG
@@ -3919,6 +3930,7 @@ static int hevc_ref_frame(HEVCFrame *dst, const HEVCFrame *src)
     dst->rpl = av_refstruct_ref(src->rpl);
     dst->nb_rpl_elems = src->nb_rpl_elems;
 
+    dst->sei_pic_struct = src->sei_pic_struct;
     dst->poc        = src->poc;
     dst->ctb_count  = src->ctb_count;
     dst->flags      = src->flags;
@@ -3948,6 +3960,10 @@ static av_cold int hevc_decode_free(AVCodecContext *avctx)
 
     av_freep(&s->md5_ctx);
 
+
+    ff_hevc_output_frame_construction_ctx_unref(s);
+
+   // ff_container_fifo_free(&s->output_fifo);
     av_container_fifo_free(&s->output_fifo);
 
     for (int layer = 0; layer < FF_ARRAY_ELEMS(s->layers); layer++) {
@@ -3992,7 +4008,15 @@ static av_cold int hevc_init_context(AVCodecContext *avctx)
     s->local_ctx[0].logctx = avctx;
     s->local_ctx[0].common_cabac_state = &s->cabac;
 
+
+    if (ff_hevc_output_frame_construction_ctx_alloc(s) != 0 ||
+        !s->output_frame_construction_ctx) {
+        return AVERROR(ENOMEM);
+    }
+
+    //s->output_fifo = ff_container_fifo_alloc_avframe(0);
     s->output_fifo = av_container_fifo_alloc_avframe(0);
+
     if (!s->output_fifo)
         return AVERROR(ENOMEM);
 
@@ -4045,6 +4069,8 @@ static int hevc_update_thread_context(AVCodecContext *dst,
                 return ret;
         }
     }
+
+    ff_hevc_output_frame_construction_ctx_replace(s, s0);
 
     for (int i = 0; i < FF_ARRAY_ELEMS(s->ps.vps_list); i++)
         av_refstruct_replace(&s->ps.vps_list[i], s0->ps.vps_list[i]);
@@ -4106,6 +4132,8 @@ static int hevc_update_thread_context(AVCodecContext *dst,
     s->sei.common.display_orientation  = s0->sei.common.display_orientation;
     s->sei.common.alternative_transfer = s0->sei.common.alternative_transfer;
     s->sei.tdrdi                       = s0->sei.tdrdi;
+
+    s->sei.picture_timing              = s0->sei.picture_timing;
     s->sei.recovery_point              = s0->sei.recovery_point;
     s->recovery_poc                    = s0->recovery_poc;
 
