@@ -26,8 +26,9 @@ PIXFMT_8_LIST =         bgr24           \
                         uyvy422         \
                         vyu444          \
 
-FATE_PIXFMT := $(PIXFMT_8_LIST:%=fate-pixfmt-%)
+FATE_PIXFMT-$(CONFIG_SCALE_FILTER) := $(PIXFMT_8_LIST:%=fate-pixfmt-%)
 
+FATE_PIXFMT := $(FATE_PIXFMT-yes)
 $(FATE_PIXFMT): CMD = pixfmt_conversion
 $(FATE_PIXFMT): REF = $(SRC_PATH)/tests/ref/pixfmt/$(@:fate-pixfmt-%=%)
 $(FATE_PIXFMT): $(VREF)
@@ -105,6 +106,7 @@ FATE_PIXFMT_8-YUV-$(call ALLYES, SCALE_FILTER YUVTESTSRC_FILTER LAVFI_INDEV) += 
 FATE_PIXFMT_8-RGB-$(call ALLYES, SCALE_FILTER RGBTESTSRC_FILTER LAVFI_INDEV) += $(PIXFMT_EXT_LIST)
 
 FATE_PIXFMT_8-YUV += $(FATE_PIXFMT_8-YUV-yes:%=fate-pixfmt-yuv444p-%)
+FATE_PIXFMT_8-YUV += $(FATE_PIXFMT_8-YUV-yes:%=fate-pixfmt-nv24-%)
 FATE_PIXFMT_8-RGB += $(FATE_PIXFMT_8-RGB-yes:%=fate-pixfmt-gbrp-%)
 FATE_PIXFMT_8-RGB += $(FATE_PIXFMT_8-RGB-yes:%=fate-pixfmt-rgb24-%)
 
@@ -119,6 +121,8 @@ FATE_PIXFMT_EXT-RGB-$(call ALLYES, SCALE_FILTER RGBTESTSRC_FILTER LAVFI_INDEV) +
 
 FATE_PIXFMT_EXT-YUV += $(FATE_PIXFMT_EXT-YUV-yes:%=fate-pixfmt-yuv444p10-%)
 FATE_PIXFMT_EXT-YUV += $(FATE_PIXFMT_EXT-YUV-yes:%=fate-pixfmt-yuv444p12-%)
+FATE_PIXFMT_EXT-YUV += $(FATE_PIXFMT_EXT-YUV-yes:%=fate-pixfmt-p410-%)
+FATE_PIXFMT_EXT-YUV += $(FATE_PIXFMT_EXT-YUV-yes:%=fate-pixfmt-p412-%)
 FATE_PIXFMT_EXT-RGB += $(FATE_PIXFMT_EXT-RGB-yes:%=fate-pixfmt-gbrp10-%)
 FATE_PIXFMT_EXT-RGB += $(FATE_PIXFMT_EXT-RGB-yes:%=fate-pixfmt-gbrp12-%)
 FATE_PIXFMT_EXT-RGB += $(FATE_PIXFMT_EXT-RGB-yes:%=fate-pixfmt-rgb48-%)
@@ -133,6 +137,7 @@ FATE_PIXFMT_16-YUV-$(call ALLYES, SCALE_FILTER YUVTESTSRC_FILTER LAVFI_INDEV) +=
 FATE_PIXFMT_16-RGB-$(call ALLYES, SCALE_FILTER RGBTESTSRC_FILTER LAVFI_INDEV) += $(PIXFMT_16_LIST)
 
 FATE_PIXFMT_16-YUV := $(FATE_PIXFMT_16-YUV-yes:%=fate-pixfmt-yuv444p16-%)
+FATE_PIXFMT_16-YUV := $(FATE_PIXFMT_16-RGB-yes:%=fate-pixfmt-p416-%)
 FATE_PIXFMT_16-RGB := $(FATE_PIXFMT_16-RGB-yes:%=fate-pixfmt-gbrp16-%)
 
 $(FATE_PIXFMT_16-YUV): CMD = pixfmt_conversion_ext "yuv" "le"

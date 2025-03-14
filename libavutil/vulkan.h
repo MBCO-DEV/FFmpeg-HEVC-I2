@@ -81,6 +81,7 @@ typedef struct FFVulkanDescriptorSetBinding {
     uint32_t            dimensions;  /* Needed for e.g. sampler%iD */
     uint32_t            elems;       /* 0 - scalar, 1 or more - vector */
     VkShaderStageFlags  stages;
+    uint32_t            buf_elems;   /* Appends [buf_elems] to the contents. Avoids manually printing to a string. */
     VkSampler           samplers[4]; /* Sampler to use for all elems */
 } FFVulkanDescriptorSetBinding;
 
@@ -99,11 +100,6 @@ typedef struct FFVkBuffer {
     uint8_t *mapped_mem;
 } FFVkBuffer;
 
-typedef struct FFVkQueueFamilyCtx {
-    int queue_family;
-    int nb_queues;
-} FFVkQueueFamilyCtx;
-
 typedef struct FFVkExecContext {
     uint32_t idx;
     const struct FFVkExecPool *parent;
@@ -121,6 +117,9 @@ typedef struct FFVkExecContext {
     /* Fence for the command buffer */
     VkFence fence;
 
+    /* Opaque data, untouched, free to use by users */
+    void *opaque;
+
     void *query_data;
     int query_idx;
 
@@ -133,6 +132,11 @@ typedef struct FFVkExecContext {
     AVFrame **frame_deps;
     unsigned int frame_deps_alloc_size;
     int nb_frame_deps;
+
+    /* Software frame dependencies */
+    AVFrame **sw_frame_deps;
+    unsigned int sw_frame_deps_alloc_size;
+    int nb_sw_frame_deps;
 
     VkSemaphoreSubmitInfo *sem_wait;
     unsigned int sem_wait_alloc;
@@ -240,7 +244,7 @@ typedef struct FFVulkanShaderData {
 
 typedef struct FFVkExecPool {
     FFVkExecContext *contexts;
-    atomic_int_least64_t idx;
+    atomic_uint_least64_t idx;
 
     VkCommandPool cmd_buf_pool;
     VkCommandBuffer *cmd_bufs;
@@ -267,6 +271,7 @@ typedef struct FFVulkanContext {
     FFVulkanFunctions     vkfn;
     FFVulkanExtensions    extensions;
     VkPhysicalDeviceProperties2 props;
+    VkPhysicalDeviceVulkan11Properties props_11;
     VkPhysicalDeviceDriverProperties driver_props;
     VkPhysicalDeviceMemoryProperties mprops;
     VkPhysicalDeviceExternalMemoryHostPropertiesEXT hprops;
@@ -358,6 +363,11 @@ const char *ff_vk_ret2str(VkResult res);
 int ff_vk_mt_is_np_rgb(enum AVPixelFormat pix_fmt);
 
 /**
+ * Get the aspect flag for a plane from an image.
+ */
+VkImageAspectFlags ff_vk_aspect_flag(AVFrame *f, int p);
+
+/**
  * Returns the format to use for images in shaders.
  */
 enum FFVkShaderRepFormat {
@@ -379,17 +389,20 @@ const char *ff_vk_shader_rep_fmt(enum AVPixelFormat pix_fmt,
 int ff_vk_load_props(FFVulkanContext *s);
 
 /**
- * Chooses a QF and loads it into a context.
+ * Chooses an appropriate QF.
  */
-int ff_vk_qf_init(FFVulkanContext *s, FFVkQueueFamilyCtx *qf,
-                  VkQueueFlagBits dev_family);
+AVVulkanDeviceQueueFamily *ff_vk_qf_find(FFVulkanContext *s,
+                                         VkQueueFlagBits dev_family,
+                                         VkVideoCodecOperationFlagBitsKHR vid_ops);
 
 /**
  * Allocates/frees an execution pool.
+ * If used in a multi-threaded context, there must be at least as many contexts
+ * as there are threads.
  * ff_vk_exec_pool_init_desc() MUST be called if ff_vk_exec_descriptor_set_add()
  * has been called.
  */
-int ff_vk_exec_pool_init(FFVulkanContext *s, FFVkQueueFamilyCtx *qf,
+int ff_vk_exec_pool_init(FFVulkanContext *s, AVVulkanDeviceQueueFamily *qf,
                          FFVkExecPool *pool, int nb_contexts,
                          int nb_queries, VkQueryType query_type, int query_64bit,
                          const void *query_create_pnext);
@@ -435,6 +448,8 @@ int ff_vk_exec_add_dep_bool_sem(FFVulkanContext *s, FFVkExecContext *e,
 int ff_vk_exec_add_dep_frame(FFVulkanContext *s, FFVkExecContext *e, AVFrame *f,
                              VkPipelineStageFlagBits2 wait_stage,
                              VkPipelineStageFlagBits2 signal_stage);
+int ff_vk_exec_add_dep_sw_frame(FFVulkanContext *s, FFVkExecContext *e,
+                                AVFrame *f);
 void ff_vk_exec_update_frame(FFVulkanContext *s, FFVkExecContext *e, AVFrame *f,
                              VkImageMemoryBarrier2 *bar, uint32_t *nb_img_bar);
 int ff_vk_exec_mirror_sem_value(FFVulkanContext *s, FFVkExecContext *e,
@@ -466,9 +481,6 @@ int ff_vk_alloc_mem(FFVulkanContext *s, VkMemoryRequirements *req,
 int ff_vk_create_buf(FFVulkanContext *s, FFVkBuffer *buf, size_t size,
                      void *pNext, void *alloc_pNext,
                      VkBufferUsageFlags usage, VkMemoryPropertyFlagBits flags);
-int ff_vk_create_avbuf(FFVulkanContext *s, AVBufferRef **ref, size_t size,
-                       void *pNext, void *alloc_pNext,
-                       VkBufferUsageFlags usage, VkMemoryPropertyFlagBits flags);
 
 /**
  * Buffer management code.
@@ -574,6 +586,14 @@ int ff_vk_shader_update_desc_buffer(FFVulkanContext *s, FFVkExecContext *e,
                                     int set, int bind, int elem,
                                     FFVkBuffer *buf, VkDeviceSize offset, VkDeviceSize len,
                                     VkFormat fmt);
+
+/**
+ * Sets an image descriptor for specified shader and binding.
+ */
+int ff_vk_set_descriptor_image(FFVulkanContext *s, FFVulkanShader *shd,
+                               FFVkExecContext *e, int set, int bind, int offs,
+                               VkImageView view, VkImageLayout layout,
+                               VkSampler sampler);
 
 /**
  * Update a descriptor in a buffer with an image array..
