@@ -45,11 +45,11 @@ static void ff_hscale16to15_4_neon(SwsInternal *c, int16_t *_dst, int dstW,
                       const uint8_t *_src, const int16_t *filter,
                       const int32_t *filterPos, int filterSize)
 {
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->opts.src_format);
     int sh              = desc->comp[0].depth - 1;
 
     if (sh<15) {
-        sh = isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
+        sh = isAnyRGB(c->opts.src_format) || c->opts.src_format==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
     } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
         sh = 16 - 1;
     }
@@ -61,11 +61,11 @@ static void ff_hscale16to15_X8_neon(SwsInternal *c, int16_t *_dst, int dstW,
                       const uint8_t *_src, const int16_t *filter,
                       const int32_t *filterPos, int filterSize)
 {
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->opts.src_format);
     int sh              = desc->comp[0].depth - 1;
 
     if (sh<15) {
-        sh = isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
+        sh = isAnyRGB(c->opts.src_format) || c->opts.src_format==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
     } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
         sh = 16 - 1;
     }
@@ -77,11 +77,11 @@ static void ff_hscale16to15_X4_neon(SwsInternal *c, int16_t *_dst, int dstW,
                       const uint8_t *_src, const int16_t *filter,
                       const int32_t *filterPos, int filterSize)
 {
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->opts.src_format);
     int sh              = desc->comp[0].depth - 1;
 
     if (sh<15) {
-        sh = isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
+        sh = isAnyRGB(c->opts.src_format) || c->opts.src_format==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
     } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
         sh = 16 - 1;
     }
@@ -92,11 +92,11 @@ static void ff_hscale16to19_4_neon(SwsInternal *c, int16_t *_dst, int dstW,
                            const uint8_t *_src, const int16_t *filter,
                            const int32_t *filterPos, int filterSize)
 {
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->opts.src_format);
     int bits            = desc->comp[0].depth - 1;
     int sh              = bits - 4;
 
-    if ((isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16) {
+    if ((isAnyRGB(c->opts.src_format) || c->opts.src_format==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16) {
         sh = 9;
     } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
         sh = 16 - 1 - 4;
@@ -110,11 +110,11 @@ static void ff_hscale16to19_X8_neon(SwsInternal *c, int16_t *_dst, int dstW,
                            const uint8_t *_src, const int16_t *filter,
                            const int32_t *filterPos, int filterSize)
 {
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->opts.src_format);
     int bits            = desc->comp[0].depth - 1;
     int sh              = bits - 4;
 
-    if ((isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16) {
+    if ((isAnyRGB(c->opts.src_format) || c->opts.src_format==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16) {
         sh = 9;
     } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
         sh = 16 - 1 - 4;
@@ -128,11 +128,11 @@ static void ff_hscale16to19_X4_neon(SwsInternal *c, int16_t *_dst, int dstW,
                            const uint8_t *_src, const int16_t *filter,
                            const int32_t *filterPos, int filterSize)
 {
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->opts.src_format);
     int bits            = desc->comp[0].depth - 1;
     int sh              = bits - 4;
 
-    if ((isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16) {
+    if ((isAnyRGB(c->opts.src_format) || c->opts.src_format==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16) {
         sh = 9;
     } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
         sh = 16 - 1 - 4;
@@ -210,6 +210,9 @@ void ff_##name##ToUV_neon(uint8_t *, uint8_t *, const uint8_t *, \
 void ff_##name##ToUV_half_neon(uint8_t *, uint8_t *, const uint8_t *, \
                               const uint8_t *, const uint8_t *, int w, \
                               uint32_t *coeffs, void *)
+#define NEON_INPUT_DOTPROD(name) \
+void ff_##name##ToY_neon_dotprod(uint8_t *dst, const uint8_t *src, const uint8_t *, \
+                                 const uint8_t *, int w, uint32_t *coeffs, void *);
 
 NEON_INPUT(abgr32);
 NEON_INPUT(argb32);
@@ -217,11 +220,25 @@ NEON_INPUT(bgr24);
 NEON_INPUT(bgra32);
 NEON_INPUT(rgb24);
 NEON_INPUT(rgba32);
+NEON_INPUT_DOTPROD(bgra32);
+NEON_INPUT_DOTPROD(rgba32);
 
-void ff_lumRangeFromJpeg_neon(int16_t *dst, int width);
-void ff_chrRangeFromJpeg_neon(int16_t *dstU, int16_t *dstV, int width);
-void ff_lumRangeToJpeg_neon(int16_t *dst, int width);
-void ff_chrRangeToJpeg_neon(int16_t *dstU, int16_t *dstV, int width);
+void ff_lumRangeFromJpeg8_neon(int16_t *dst, int width,
+                               uint32_t coeff, int64_t offset);
+void ff_chrRangeFromJpeg8_neon(int16_t *dstU, int16_t *dstV, int width,
+                               uint32_t coeff, int64_t offset);
+void ff_lumRangeToJpeg8_neon(int16_t *dst, int width,
+                             uint32_t coeff, int64_t offset);
+void ff_chrRangeToJpeg8_neon(int16_t *dstU, int16_t *dstV, int width,
+                             uint32_t coeff, int64_t offset);
+void ff_lumRangeFromJpeg16_neon(int16_t *dst, int width,
+                                uint32_t coeff, int64_t offset);
+void ff_chrRangeFromJpeg16_neon(int16_t *dstU, int16_t *dstV, int width,
+                                uint32_t coeff, int64_t offset);
+void ff_lumRangeToJpeg16_neon(int16_t *dst, int width,
+                              uint32_t coeff, int64_t offset);
+void ff_chrRangeToJpeg16_neon(int16_t *dstU, int16_t *dstV, int width,
+                              uint32_t coeff, int64_t offset);
 
 av_cold void ff_sws_init_range_convert_aarch64(SwsInternal *c)
 {
@@ -229,12 +246,20 @@ av_cold void ff_sws_init_range_convert_aarch64(SwsInternal *c)
 
     if (have_neon(cpu_flags)) {
         if (c->dstBpc <= 14) {
-            if (c->srcRange) {
-                c->lumConvertRange = ff_lumRangeFromJpeg_neon;
-                c->chrConvertRange = ff_chrRangeFromJpeg_neon;
+            if (c->opts.src_range) {
+                c->lumConvertRange = ff_lumRangeFromJpeg8_neon;
+                c->chrConvertRange = ff_chrRangeFromJpeg8_neon;
             } else {
-                c->lumConvertRange = ff_lumRangeToJpeg_neon;
-                c->chrConvertRange = ff_chrRangeToJpeg_neon;
+                c->lumConvertRange = ff_lumRangeToJpeg8_neon;
+                c->chrConvertRange = ff_chrRangeToJpeg8_neon;
+            }
+        } else {
+            if (c->opts.src_range) {
+                c->lumConvertRange = ff_lumRangeFromJpeg16_neon;
+                c->chrConvertRange = ff_chrRangeFromJpeg16_neon;
+            } else {
+                c->lumConvertRange = ff_lumRangeToJpeg16_neon;
+                c->chrConvertRange = ff_chrRangeToJpeg16_neon;
             }
         }
     }
@@ -251,7 +276,7 @@ av_cold void ff_sws_init_swscale_aarch64(SwsInternal *c)
         if (c->dstBpc == 8) {
             c->yuv2planeX = ff_yuv2planeX_8_neon;
         }
-        switch (c->srcFormat) {
+        switch (c->opts.src_format) {
         case AV_PIX_FMT_ABGR:
             c->lumToYV12 = ff_abgr32ToY_neon;
             if (c->chrSrcHSubSample)
@@ -276,6 +301,11 @@ av_cold void ff_sws_init_swscale_aarch64(SwsInternal *c)
             break;
         case AV_PIX_FMT_BGRA:
             c->lumToYV12 = ff_bgra32ToY_neon;
+#if HAVE_DOTPROD
+            if (have_dotprod(cpu_flags)) {
+                c->lumToYV12 = ff_bgra32ToY_neon_dotprod;
+            }
+#endif
             if (c->chrSrcHSubSample)
                 c->chrToYV12 = ff_bgra32ToUV_half_neon;
             else
@@ -290,6 +320,11 @@ av_cold void ff_sws_init_swscale_aarch64(SwsInternal *c)
             break;
         case AV_PIX_FMT_RGBA:
             c->lumToYV12 = ff_rgba32ToY_neon;
+#if HAVE_DOTPROD
+            if (have_dotprod(cpu_flags)) {
+                c->lumToYV12 = ff_rgba32ToY_neon_dotprod;
+            }
+#endif
             if (c->chrSrcHSubSample)
                 c->chrToYV12 = ff_rgba32ToUV_half_neon;
             else

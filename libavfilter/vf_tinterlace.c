@@ -228,7 +228,11 @@ static int config_out_props(AVFilterLink *outlink)
 
     if (tinterlace->mode == MODE_PAD) {
         uint8_t black[4] = { 0, 0, 0, 16 };
-        ff_draw_init2(&tinterlace->draw, outlink->format, outlink->colorspace, outlink->color_range, 0);
+        ret = ff_draw_init2(&tinterlace->draw, outlink->format, outlink->colorspace, outlink->color_range, 0);
+        if (ret < 0) {
+            av_log(ctx, AV_LOG_ERROR, "Failed to initialize FFDrawContext\n");
+            return ret;
+        }
         ff_draw_color(&tinterlace->draw, &tinterlace->color, black);
         /* limited range */
         if (!ff_fmt_is_in(outlink->format, full_scale_yuvj_pix_fmts)) {
@@ -603,26 +607,26 @@ static const AVFilterPad tinterlace_outputs[] = {
     },
 };
 
-const AVFilter ff_vf_tinterlace = {
-    .name          = "tinterlace",
-    .description   = NULL_IF_CONFIG_SMALL("Perform temporal field interlacing."),
+const FFFilter ff_vf_tinterlace = {
+    .p.name        = "tinterlace",
+    .p.description = NULL_IF_CONFIG_SMALL("Perform temporal field interlacing."),
+    .p.priv_class  = &tinterlace_class,
     .priv_size     = sizeof(TInterlaceContext),
     .uninit        = uninit,
     FILTER_INPUTS(tinterlace_inputs),
     FILTER_OUTPUTS(tinterlace_outputs),
     FILTER_PIXFMTS_ARRAY(pix_fmts),
-    .priv_class    = &tinterlace_class,
 };
 
 
-const AVFilter ff_vf_interlace = {
-    .name          = "interlace",
-    .description   = NULL_IF_CONFIG_SMALL("Convert progressive video into interlaced."),
+const FFFilter ff_vf_interlace = {
+    .p.name        = "interlace",
+    .p.description = NULL_IF_CONFIG_SMALL("Convert progressive video into interlaced."),
+    .p.priv_class  = &interlace_class,
     .priv_size     = sizeof(TInterlaceContext),
     .init          = init_interlace,
     .uninit        = uninit,
     FILTER_INPUTS(tinterlace_inputs),
     FILTER_OUTPUTS(tinterlace_outputs),
     FILTER_PIXFMTS_ARRAY(pix_fmts),
-    .priv_class    = &interlace_class,
 };

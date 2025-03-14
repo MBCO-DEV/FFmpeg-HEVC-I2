@@ -143,6 +143,9 @@ static int RENAME(decode_rgb_frame)(FFV1Context *f, FFV1SliceContext *sc,
     int transparency = f->transparency;
     int ac = f->ac;
 
+    if (sc->slice_coding_mode == 1)
+        ac = 1;
+
     for (x = 0; x < 4; x++) {
         sample[x][0] = RENAME(sc->sample_buffer) +  x * 2      * (w + 6) + 3;
         sample[x][1] = RENAME(sc->sample_buffer) + (x * 2 + 1) * (w + 6) + 3;
@@ -181,6 +184,13 @@ static int RENAME(decode_rgb_frame)(FFV1Context *f, FFV1SliceContext *sc,
                 g -= (b * sc->slice_rct_by_coef + r * sc->slice_rct_ry_coef) >> 2;
                 b += g;
                 r += g;
+            }
+            if (sc->remap) {
+                r = sc->fltmap[0][r & 0xFFFF];
+                g = sc->fltmap[1][g & 0xFFFF];
+                b = sc->fltmap[2][b & 0xFFFF];
+                if (transparency)
+                    a = sc->fltmap[3][a & 0xFFFF];
             }
 
             if (lbd)

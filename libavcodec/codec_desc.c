@@ -905,7 +905,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_VIDEO,
         .name      = "tgq",
         .long_name = NULL_IF_CONFIG_SMALL("Electronic Arts TGQ video"),
-        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
+        .props     = AV_CODEC_PROP_LOSSY,
     },
     {
         .id        = AV_CODEC_ID_TQI,
@@ -1977,6 +1977,14 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("RealVideo 6.0"),
         .props     = AV_CODEC_PROP_LOSSY | AV_CODEC_PROP_REORDER,
     },
+    {
+        .id        = AV_CODEC_ID_JPEGXL_ANIM,
+        .type      = AVMEDIA_TYPE_VIDEO,
+        .name      = "jpegxl_anim",
+        .long_name = NULL_IF_CONFIG_SMALL("JPEG XL animated"),
+        .props     = AV_CODEC_PROP_LOSSY | AV_CODEC_PROP_LOSSLESS,
+        .mime_types= MT("image/jxl"),
+    },
 
     /* various PCM "codecs" */
     {
@@ -2597,6 +2605,13 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .long_name = NULL_IF_CONFIG_SMALL("ADPCM Konami XMD"),
         .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
     },
+    {
+        .id        = AV_CODEC_ID_ADPCM_IMA_XBOX,
+        .type      = AVMEDIA_TYPE_AUDIO,
+        .name      = "adpcm_ima_xbox",
+        .long_name = NULL_IF_CONFIG_SMALL("ADPCM IMA Xbox"),
+        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
+    },
 
     /* AMR */
     {
@@ -2715,7 +2730,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_AUDIO,
         .name      = "aac",
         .long_name = NULL_IF_CONFIG_SMALL("AAC (Advanced Audio Coding)"),
-        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
+        .props     = AV_CODEC_PROP_LOSSY,
         .profiles  = NULL_IF_CONFIG_SMALL(ff_aac_profiles),
     },
     {
@@ -3049,7 +3064,7 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .type      = AVMEDIA_TYPE_AUDIO,
         .name      = "aac_latm",
         .long_name = NULL_IF_CONFIG_SMALL("AAC LATM (Advanced Audio Coding LATM syntax)"),
-        .props     = AV_CODEC_PROP_INTRA_ONLY | AV_CODEC_PROP_LOSSY,
+        .props     = AV_CODEC_PROP_LOSSY,
         .profiles  = NULL_IF_CONFIG_SMALL(ff_aac_profiles),
     },
     {
@@ -3633,6 +3648,12 @@ static const AVCodecDescriptor codec_descriptors[] = {
         .name      = "arib_caption",
         .long_name = NULL_IF_CONFIG_SMALL("ARIB STD-B24 caption"),
         .profiles  = NULL_IF_CONFIG_SMALL(ff_arib_caption_profiles),
+    },
+    {
+        .id        = AV_CODEC_ID_IVTV_VBI,
+        .type      = AVMEDIA_TYPE_SUBTITLE,
+        .name      = "ivtv_vbi",
+        .long_name = NULL_IF_CONFIG_SMALL("ivtv VBI captions"),
     },
 
     /* other kind of codecs and pseudo-codecs */

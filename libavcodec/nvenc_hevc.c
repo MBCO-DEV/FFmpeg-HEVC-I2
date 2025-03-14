@@ -158,6 +158,10 @@ static const AVOption options[] = {
                                                             OFFSET(qp_cb_offset), AV_OPT_TYPE_INT,   { .i64 = 0 }, -12, 12, VE },
     { "qp_cr_offset", "Quantization parameter offset for cr channel",
                                                             OFFSET(qp_cr_offset), AV_OPT_TYPE_INT,   { .i64 = 0 }, -12, 12, VE },
+    { "qmin",         "Specifies the minimum QP used for rate control",
+                                                            OFFSET(qmin),         AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 51, VE },
+    { "qmax",         "Specifies the maximum QP used for rate control",
+                                                            OFFSET(qmax),         AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 51, VE },
     { "weighted_pred","Set 1 to enable weighted prediction",
                                                             OFFSET(weighted_pred),AV_OPT_TYPE_INT,   { .i64 = 0 }, 0, 1, VE },
 #ifdef NVENC_HAVE_HEVC_BFRAME_REF_MODE
@@ -263,7 +267,7 @@ const FFCodec ff_hevc_nvenc_encoder = {
     .priv_data_size = sizeof(NvencContext),
     .p.priv_class   = &hevc_nvenc_class,
     .defaults       = defaults,
-    .p.pix_fmts     = ff_nvenc_pix_fmts,
+    CODEC_PIXFMTS_ARRAY(ff_nvenc_pix_fmts),
     .color_ranges   = AVCOL_RANGE_MPEG | AVCOL_RANGE_JPEG,
     .p.capabilities = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_HARDWARE |
                       AV_CODEC_CAP_ENCODER_FLUSH | AV_CODEC_CAP_DR1 |
